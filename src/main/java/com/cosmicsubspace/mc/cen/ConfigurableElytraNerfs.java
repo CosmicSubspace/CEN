@@ -22,6 +22,7 @@ import java.lang.Math;
 import org.bukkit.ChatColor;
 import java.util.Map;
 import java.util.HashMap;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfigurableElytraNerfs extends JavaPlugin 
 {   
@@ -34,20 +35,64 @@ public class ConfigurableElytraNerfs extends JavaPlugin
     }
     @Override
     public void onEnable() {
+        this.saveDefaultConfig();
+        
         //getLogger().info("Enabling Icarus...");
         //getServer().getPluginManager().registerEvents(new IcarusTickListener(), this);
         BukkitScheduler scheduler = getServer().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
+        
+        FileConfiguration config = getConfig();
+        
+        
+        // ICARUS
+        boolean conf_icarus_enabled = config.getBoolean("icarus-enabled");
+        int conf_icarus_hit = config.getInt("icarus-durability-hit");
+        boolean conf_icarus_allow_nether = config.getBoolean("icarus-allow-nether");
+        boolean conf_icarus_allow_raining = config.getBoolean("icarus-allow-raining");
+        int conf_icarus_minY = config.getInt("icarus-minimum-height");
+        
+        int icarus_hit_per_sec = (int)Math.round(conf_icarus_hit*2/432.0*100);
+        
+        String icarus_warn_prefix=
+            "["+
+            ChatColor.BLUE+"CEN"+
+            ChatColor.RESET+"/"+
+            ChatColor.AQUA+"ICARUS"+
+            ChatColor.RESET+"] ";
+        String icarus_warn_line1=
+            icarus_warn_prefix+
+            ChatColor.RED+ChatColor.BOLD+"!!! YOUR WINGS ARE MELTING !!!"+
+            ChatColor.RESET;
+        String icarus_warn_line2;
+        if (conf_icarus_allow_nether){
+            icarus_warn_line2=
+                icarus_warn_prefix+
+                ChatColor.GRAY+ChatColor.ITALIC+
+                "When flying under direct sunlight,"+
+                ChatColor.RESET;
+        }else{
+            icarus_warn_line2=
+                icarus_warn_prefix+
+                ChatColor.GRAY+ChatColor.ITALIC+
+                "When flying under direct sunlight (or in nether),"+
+                ChatColor.RESET;
+        }
+        
+        String icarus_warn_line3=
+            icarus_warn_prefix+
+            ChatColor.GRAY+ChatColor.ITALIC+
+            "Your elytra will take "+icarus_hit_per_sec+"% damage every second."+
+            ChatColor.RESET;
+        
+        
+        Runnable icarusRunnable = new Runnable() {
             @Override
             public void run() {
                 long systemTime=System.currentTimeMillis();
                 for (Player p: getServer().getOnlinePlayers()){
                     String pname=p.getName();
                     boolean gliding = p.isGliding();
-                    Location loc=p.getLocation();
-                    
-                    
-                    
+                    Location loc=p.getLocation();                    
                     
                     World w=p.getWorld();
                     Chunk c=w.getChunkAt(loc);
@@ -72,13 +117,20 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                     // For a more generous definition of day, we can use 23000~13000
                     // Which includes dusk/sunrise
                     boolean isDay = (time>=0) && (time<=12000);
-                    boolean sunUp = w.isClearWeather() && isDay && w.hasSkyLight();
+                    boolean sunUp;
+                    if (conf_icarus_allow_raining){
+                        sunUp = w.isClearWeather() && isDay && w.hasSkyLight();
+                    }else{
+                        sunUp = isDay && w.hasSkyLight();
+                    }
                     
                     boolean sunlightOnPlayer = (skylight==15) && sunUp;
                     
-                    if (w.isUltraWarm()) sunlightOnPlayer=true;
+                    if (!conf_icarus_allow_nether){
+                        if (w.isUltraWarm()) sunlightOnPlayer=true;
+                    }
                     
-                    
+                    boolean height_high = loc.getBlockY() > conf_icarus_minY;
                     
                     PlayerInventory pinv= p.getInventory();
                     ItemStack chestplate=pinv.getChestplate();
@@ -87,11 +139,11 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                     if (chestplate != null){
                         wearingElytra = (chestplate.getType() == Material.ELYTRA);
                         ItemMeta imeta=chestplate.getItemMeta();
-                        if (wearingElytra && sunlightOnPlayer && gliding){
+                        if (wearingElytra && sunlightOnPlayer && gliding && height_high){
                             if (imeta instanceof Damageable){
                                 Damageable dmg = (Damageable)imeta;
                                 damage=dmg.getDamage();
-                                damage+=10; // 10/432 = ~2.5%/0.5s -> ~5%/sec
+                                damage+=conf_icarus_hit; // 10/432 = ~2.5%/0.5s -> ~5%/sec
                                 if (damage>=Material.ELYTRA.getMaxDurability()){
                                     damage=Material.ELYTRA.getMaxDurability()-1;
                                 }
@@ -113,10 +165,9 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                                         60, //sustain, ticks
                                         20); //FadeOut, ticks
                                     */
-                                    String prefix="["+ChatColor.BLUE+"CEN"+ChatColor.RESET+"/"+ChatColor.AQUA+"ICARUS"+ChatColor.RESET+"] ";
-                                    p.sendMessage(prefix+ChatColor.RED+ChatColor.BOLD+"!!! YOUR WINGS ARE MELTING !!!"+ChatColor.RESET);
-                                    p.sendMessage(prefix+ChatColor.GRAY+ChatColor.ITALIC+"When flying under direct sunlight (or in nether),"+ChatColor.RESET);
-                                    p.sendMessage(prefix+ChatColor.GRAY+ChatColor.ITALIC+"Your elytra will take 5% damage every second."+ChatColor.RESET);
+                                    p.sendMessage(icarus_warn_line1);
+                                    p.sendMessage(icarus_warn_line2);
+                                    p.sendMessage(icarus_warn_line3);
                                 }
                                 
                                 p.sendTitle(
@@ -136,7 +187,9 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                     
                 }
             }
-        }, 0L, 10L);
+        };
+        if (conf_icarus_enabled)    
+            scheduler.scheduleSyncRepeatingTask(this,icarusRunnable, 0L, 10L);
     }
     @Override
     public void onDisable() {

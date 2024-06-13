@@ -1,0 +1,33 @@
+# Global disable
+cen-all-disable: false
+
+# Terminal Velocity
+terminal-velocity-enabled: true
+terminal-velocity-speed: 16
+
+# Glider
+glider-enabled: true
+
+# Motion Sickness
+motion-sickness-enabled: true
+motion-sickness-threshold-speed: 12 #meters per second
+motion-sickness-nausea-duration: 10 #seconds
+
+# Emissions Control
+emissions-control-enabled: true
+emissions-control-time-period: 60 #seconds
+emissions-control-count: 1 #fireworks
+
+# Fear of Heights
+fear-of-heights-enabled: true
+fear-of-heights-threshold: 10 #meters over terrain
+fear-of-heights-duration: 10 #seconds
+
+# ICARUS
+icarus-enabled: true
+# How many durability points to subtract every half-second
+# Note that an elytra has 432 total durabilty.
+icarus-durability-hit: 10 
+icarus-allow-nether: false # Allow elytra in the Nether.
+icarus-allow-raining: true # Allow elytra when it is raining (overworld)
+icarus-minimum-height: 60 #Minimum Y-height for the effect to kick in.
