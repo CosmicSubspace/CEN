@@ -23,15 +23,35 @@ import org.bukkit.ChatColor;
 import java.util.Map;
 import java.util.HashMap;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 
 public class ConfigurableElytraNerfs extends JavaPlugin 
 {   
-    Map<String,Long> lastNotified = new HashMap<>();
+    
     class IcarusTickListener implements Listener{
         @EventHandler 
         public void onPlayerMove(PlayerMoveEvent evt){
             //getLogger().info("PlayerMove!");
         }
+    }
+    
+    Map<String,Map<String,Long>> lastNotifiedTime = new HashMap<>();
+    boolean rateLimitMsg(String type, String username, int millisec){
+        if (lastNotifiedTime.get(type) == null){
+            lastNotifiedTime.put(type,new HashMap<>());
+        }
+        Map<String,Long> username2time = lastNotifiedTime.get(type);
+        if (username2time.get(username)==null){
+            username2time.put(username,-1000000L);
+        }
+        long lastNotified=username2time.get(username);
+        long t=System.currentTimeMillis();
+        if (Math.abs(t-lastNotified)>millisec){
+            username2time.put(username,t);
+            return true;
+        }
+        return false;
     }
     @Override
     public void onEnable() {
@@ -42,6 +62,9 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         BukkitScheduler scheduler = getServer().getScheduler();
         
         FileConfiguration config = getConfig();
+        
+        boolean conf_all_disable = config.getBoolean("cen_all_disable");
+        
         
         
         // ICARUS
@@ -85,10 +108,10 @@ public class ConfigurableElytraNerfs extends JavaPlugin
             ChatColor.RESET;
         
         
+        
         Runnable icarusRunnable = new Runnable() {
             @Override
             public void run() {
-                long systemTime=System.currentTimeMillis();
                 for (Player p: getServer().getOnlinePlayers()){
                     String pname=p.getName();
                     boolean gliding = p.isGliding();
@@ -152,11 +175,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                                 chestplate.setItemMeta(dmg);
                                 pinv.setChestplate(chestplate);
                                 
-                                if (lastNotified.get(pname)==null){
-                                    lastNotified.put(pname,-1000000L);
-                                }
-                                if (Math.abs(lastNotified.get(pname)-systemTime)>15000){
-                                    lastNotified.put(pname,systemTime);
+                                if (rateLimitMsg("Icarus",pname,10000)){
                                     /*
                                     p.sendTitle(
                                         "", //title
@@ -188,8 +207,43 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                 }
             }
         };
-        if (conf_icarus_enabled)    
+        if ((!conf_all_disable) && conf_icarus_enabled)    
             scheduler.scheduleSyncRepeatingTask(this,icarusRunnable, 0L, 10L);
+        
+        
+        // Glider
+        String glider_warn=
+            "["+
+            ChatColor.BLUE+"CEN"+
+            ChatColor.RESET+"/"+
+            ChatColor.AQUA+"Glider"+
+            ChatColor.RESET+"] "+
+            ChatColor.RED+ChatColor.BOLD+"Elytra boosting is not allowed on this server!"+
+            ChatColor.RESET;
+        
+        boolean conf_glider_enabled = config.getBoolean("glider-enabled");
+        Listener gliderListener = new Listener(){
+            @EventHandler 
+            public void onPlayerInteract(PlayerInteractEvent evt){
+                //getLogger().info("PlayerInteract!");
+                Player p=evt.getPlayer();
+                Material mat=evt.getMaterial();
+                boolean is_fw=(mat==Material.FIREWORK_ROCKET);
+                boolean gliding = p.isGliding();
+                //getLogger().info("FW "+is_fw+" GL "+gliding);
+                if (is_fw && gliding){
+                    evt.setCancelled(true);
+                    if (rateLimitMsg("glider",p.getName(),1000)){
+                        p.sendMessage(glider_warn);
+                    }
+                }
+            }
+        };
+        if ((!conf_all_disable) && conf_glider_enabled)    
+            getServer().getPluginManager().registerEvents(gliderListener, this);
+        
+        
+        
     }
     @Override
     public void onDisable() {
