@@ -25,6 +25,7 @@ import java.util.HashMap;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
+import org.bukkit.util.Vector;
 
 public class ConfigurableElytraNerfs extends JavaPlugin 
 {   
@@ -243,6 +244,45 @@ public class ConfigurableElytraNerfs extends JavaPlugin
             getServer().getPluginManager().registerEvents(gliderListener, this);
         
         
+        
+        // Terminal Velocity
+        boolean conf_tv_enabled = config.getBoolean("terminal-velocity-enabled");
+        // Convert from m/s to m/tick
+        double conf_tv_maxvel_mps = config.getDouble("terminal-velocity-speed");
+        double conf_tv_maxvel_mpt = conf_tv_maxvel_mps/20.0;
+         
+        String termvel_warn=
+            "["+
+            ChatColor.BLUE+"CEN"+
+            ChatColor.RESET+"/"+
+            ChatColor.AQUA+"Terminal Velocity"+
+            ChatColor.RESET+"] "+
+            ChatColor.RED+"Max elytra speed is "+
+            ChatColor.BOLD+conf_tv_maxvel_mps+"m/s"+
+            ChatColor.RESET;
+        
+        Listener termvelListener = new Listener(){
+            @EventHandler 
+            public void onPlayerMove(PlayerMoveEvent evt){
+                //getLogger().info("PlayerInteract!");
+                Player p=evt.getPlayer();
+                Vector v=p.getVelocity();
+                double speed = v.length(); 
+                boolean gliding = p.isGliding();
+                boolean overspeed=speed>conf_tv_maxvel_mpt;
+                
+                //getLogger().info("SPD "+(speed/20)+"m/s GL "+gliding+" OS "+overspeed);
+                if (overspeed && gliding){
+                    p.setVelocity(v.normalize().multiply(conf_tv_maxvel_mpt));
+                    if (rateLimitMsg("TermVel",p.getName(),10000)){
+                        p.sendMessage(termvel_warn);
+                    }
+                }
+            }
+        };
+        if ((!conf_all_disable) && conf_tv_enabled)    
+            getServer().getPluginManager().registerEvents(termvelListener, this);
+            
         
     }
     @Override
