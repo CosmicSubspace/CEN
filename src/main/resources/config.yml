@@ -1,6 +1,11 @@
 # Global disable
 cen-all-disable: false
 
+# Use tick time as time measurement?
+# When the server's running at 10TPS,
+# if below is true, all time options will effectively be doubled.
+cen-use-tick-time: true
+
 # Terminal Velocity
 terminal-velocity-enabled: true
 terminal-velocity-speed: 16
@@ -8,15 +13,10 @@ terminal-velocity-speed: 16
 # Glider
 glider-enabled: true
 
-# Motion Sickness
-motion-sickness-enabled: true
-motion-sickness-threshold-speed: 12 #meters per second
-motion-sickness-nausea-duration: 10 #seconds
-
-# Emissions Control
-emissions-control-enabled: true
-emissions-control-time-period: 60 #seconds
-emissions-control-count: 1 #fireworks
+# Limit Boost
+limit-boost-enabled: true
+limit-boost-time-period: 60 #seconds
+limit-boost-count: 1 #fireworks
 
 # Fear of Heights
 fear-of-heights-enabled: true
