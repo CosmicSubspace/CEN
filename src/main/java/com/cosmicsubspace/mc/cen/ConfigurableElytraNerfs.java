@@ -34,13 +34,6 @@ import org.bukkit.potion.PotionEffect;
 public class ConfigurableElytraNerfs extends JavaPlugin 
 {   
     
-    class IcarusTickListener implements Listener{
-        @EventHandler 
-        public void onPlayerMove(PlayerMoveEvent evt){
-            //getLogger().info("PlayerMove!");
-        }
-    }
-    
     Map<String,Map<String,Long>> lastNotifiedTime = new HashMap<>();
     boolean rateLimitMsg(String type, String username, int millisec){
         if (lastNotifiedTime.get(type) == null){
@@ -63,7 +56,6 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         this.saveDefaultConfig();
         
         //getLogger().info("Enabling Icarus...");
-        //getServer().getPluginManager().registerEvents(new IcarusTickListener(), this);
         BukkitScheduler scheduler = getServer().getScheduler();
         
         FileConfiguration config = getConfig();
@@ -78,7 +70,6 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         boolean conf_icarus_allow_nether = config.getBoolean("icarus-allow-nether");
         boolean conf_icarus_allow_raining = config.getBoolean("icarus-allow-raining");
         int conf_icarus_minY = config.getInt("icarus-minimum-height");
-        
         int icarus_hit_per_sec = (int)Math.round(conf_icarus_hit*2/432.0*100);
         
         String icarus_warn_prefix=
@@ -105,13 +96,11 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                 "When flying under direct sunlight (or in nether),"+
                 ChatColor.RESET;
         }
-        
         String icarus_warn_line3=
             icarus_warn_prefix+
             ChatColor.GRAY+ChatColor.ITALIC+
             "Your elytra will take "+icarus_hit_per_sec+"% damage every second."+
             ChatColor.RESET;
-        
         
         
         Runnable icarusRunnable = new Runnable() {
@@ -125,20 +114,11 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                     World w=p.getWorld();
                     Chunk c=w.getChunkAt(loc);
                     ChunkSnapshot cs=c.getChunkSnapshot();
-                    Block highestBlock= w.getHighestBlockAt(loc); //excludes passable blocks - is this what we want? idk
-                    Location hightestBlockLoc=highestBlock.getLocation();
-                    
-                    boolean skylightEnabled = w.hasSkyLight();
                     
                     int chunkX=((loc.getBlockX()%16)+16)%16;
                     int chunkY=loc.getBlockY();
                     int chunkZ=((loc.getBlockZ()%16)+16)%16;
                     int skylight=cs.getBlockSkyLight(chunkX,chunkY,chunkZ);
-                    
-                    Block playerBlock = c.getBlock(chunkX,chunkY,chunkZ);
-                    int lightTotal = playerBlock.getLightLevel();
-                    int lightSky = playerBlock.getLightFromSky();
-                    int lightBlock = playerBlock.getLightFromBlocks();
                     
                     long time=w.getTime();
                     // Below is the time range where daylight is at 15 (strongest)
@@ -171,7 +151,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                             if (imeta instanceof Damageable){
                                 Damageable dmg = (Damageable)imeta;
                                 damage=dmg.getDamage();
-                                damage+=conf_icarus_hit; // 10/432 = ~2.5%/0.5s -> ~5%/sec
+                                damage+=conf_icarus_hit;
                                 if (damage>=Material.ELYTRA.getMaxDurability()){
                                     damage=Material.ELYTRA.getMaxDurability()-1;
                                 }
@@ -181,34 +161,19 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                                 pinv.setChestplate(chestplate);
                                 
                                 if (rateLimitMsg("Icarus",pname,10000)){
-                                    /*
-                                    p.sendTitle(
-                                        "", //title
-                                        ""+ChatColor.RED+"Your wings are melting!"+ChatColor.RESET, //subtitle
-                                        10, //fadein, ticks
-                                        60, //sustain, ticks
-                                        20); //FadeOut, ticks
-                                    */
                                     p.sendMessage(icarus_warn_line1);
                                     p.sendMessage(icarus_warn_line2);
                                     p.sendMessage(icarus_warn_line3);
                                 }
-                                
                                 p.sendTitle(
                                         "", //title
                                         ChatColor.RED+"Elytra "+Math.round(durabilityRatio*100)+"%", //subtitle
                                         0, //fadein, ticks
                                         20, //sustain, ticks
                                         20); //FadeOut, ticks
-                                
                             }
                         }
-                    }
-                    
-                    
-                    //getLogger().info("Player: "+pname+" SL: "+skylight+" SOP: "+sunlightOnPlayer+" G: "+gliding+" WE: "+wearingElytra+" CD: "+damage );
-                    
-                    
+                    }                    
                 }
             }
         };
@@ -223,19 +188,17 @@ public class ConfigurableElytraNerfs extends JavaPlugin
             ChatColor.RESET+"/"+
             ChatColor.AQUA+"Glider"+
             ChatColor.RESET+"] "+
-            ChatColor.RED+ChatColor.BOLD+"Elytra boosting is not allowed on this server!"+
+            ChatColor.RED+ChatColor.BOLD+"Elytra boosting is not allowed!"+
             ChatColor.RESET;
         
         boolean conf_glider_enabled = config.getBoolean("glider-enabled");
         Listener gliderListener = new Listener(){
             @EventHandler 
             public void onPlayerInteract(PlayerInteractEvent evt){
-                //getLogger().info("PlayerInteract!");
                 Player p=evt.getPlayer();
                 Material mat=evt.getMaterial();
                 boolean is_fw=(mat==Material.FIREWORK_ROCKET);
                 boolean gliding = p.isGliding();
-                //getLogger().info("FW "+is_fw+" GL "+gliding);
                 if (is_fw && gliding){
                     evt.setCancelled(true);
                     if (rateLimitMsg("glider",p.getName(),1000)){
@@ -259,7 +222,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin
             "["+
             ChatColor.BLUE+"CEN"+
             ChatColor.RESET+"/"+
-            ChatColor.AQUA+"Terminal Velocity"+
+            ChatColor.AQUA+"TerminalVelocity"+
             ChatColor.RESET+"] "+
             ChatColor.RED+"Max elytra speed is "+
             ChatColor.BOLD+conf_tv_maxvel_mps+"m/s"+
@@ -268,14 +231,12 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         Listener termvelListener = new Listener(){
             @EventHandler 
             public void onPlayerMove(PlayerMoveEvent evt){
-                //getLogger().info("PlayerInteract!");
                 Player p=evt.getPlayer();
                 Vector v=p.getVelocity();
                 double speed = v.length(); 
                 boolean gliding = p.isGliding();
                 boolean overspeed=speed>conf_tv_maxvel_mpt;
                 
-                //getLogger().info("SPD "+(speed/20)+"m/s GL "+gliding+" OS "+overspeed);
                 if (overspeed && gliding){
                     p.setVelocity(v.normalize().multiply(conf_tv_maxvel_mpt));
                     if (rateLimitMsg("TermVel",p.getName(),10000)){
@@ -329,7 +290,6 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                 long t;
                 if (conf_use_ticktime) t = p.getWorld().getFullTime()*50;
                 else t=System.currentTimeMillis();
-                //getLogger().info("LB FW "+is_fw+" GL "+gliding+" T "+t);
                 if (is_fw && gliding){
                     if (boost_log.get(pn) == null) boost_log.put(pn,new ArrayList());
                     
@@ -343,7 +303,6 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                     if (personalList.size()>0 &&
                         (Math.abs(personalList.get(personalList.size()-1)-t)<10)){}
                     else{
-                        //getLogger().info("BL "+personalList.size());
                         if (personalList.size()>=conf_limitboost_count){
                             evt.setCancelled(true);
                             if (rateLimitMsg("limitboost",p.getName(),1000)){
@@ -398,8 +357,6 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                     Location loc=p.getLocation();                    
                     
                     World w=p.getWorld();
-                    Chunk c=w.getChunkAt(loc);
-                    ChunkSnapshot cs=c.getChunkSnapshot();
                     Block highestBlock= w.getHighestBlockAt(loc); //excludes passable blocks - is this what we want? idk
                     Location hightestBlockLoc=highestBlock.getLocation();
                     
@@ -421,13 +378,11 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                                     conf_acrophobia_power, true // ambient
                                     ));
                             if (rateLimitMsg("acrophobia-notice",p.getName(),10000)){
+                                rateLimitMsg("acrophobia-warn",p.getName(),0);
                                 p.sendMessage(acrophobia_notice);
                             }
                         }
                     }
-                    
-                    //getLogger().info("Player: "+pname+" Y: "+loc.getY()+" HBy: "+hightestBlockLoc.getY()+" G: "+gliding);
-                    
                     
                 }
             }
