@@ -18,10 +18,12 @@ limit-boost-enabled: true
 limit-boost-time-period: 60 #seconds
 limit-boost-count: 1 #fireworks
 
-# Fear of Heights
-fear-of-heights-enabled: true
-fear-of-heights-threshold: 10 #meters over terrain
-fear-of-heights-duration: 10 #seconds
+# Acrophobia
+acrophobia-enabled: true
+acrophobia-height: 10 #meters over terrain
+acrophobia-duration: 10 #seconds
+acrophobia-delay: 2 #seconds
+acrophobia-power: 1 #power of Blindness effect
 
 # ICARUS
 icarus-enabled: true

@@ -28,6 +28,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.util.Vector;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionEffect;
 
 public class ConfigurableElytraNerfs extends JavaPlugin 
 {   
@@ -356,6 +358,82 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         };
         if ((!conf_all_disable) && conf_limitboost_enabled)    
             getServer().getPluginManager().registerEvents(limitboostListener, this);
+            
+            
+        // Acrophobia
+        boolean conf_acrophobia_enabled = config.getBoolean("acrophobia-enabled");
+        double conf_acrophobia_height = config.getDouble("acrophobia-height");
+        double conf_acrophobia_duration_sec = config.getDouble("acrophobia-duration");
+        int conf_acrophobia_duration_ticks = (int)Math.round(conf_acrophobia_duration_sec*20);
+        int conf_acrophobia_power = (int)config.getDouble("acrophobia-power")-1;
+        double conf_acrophobia_delay = config.getDouble("acrophobia-delay");
+        
+        String acrophobia_prefix=
+            "["+
+            ChatColor.BLUE+"CEN"+
+            ChatColor.RESET+"/"+
+            ChatColor.AQUA+"Acrophobia"+
+            ChatColor.RESET+"] ";
+        String acrophobia_warn=
+            acrophobia_prefix+
+            ChatColor.RED+"You are afraid of heights..."+
+            ChatColor.RESET;        
+        String acrophobia_notice=
+            acrophobia_prefix+
+            ChatColor.RED+ChatColor.BOLD+"You are blinded by fear!"+
+            ChatColor.RESET;        
+        
+        Map<String,Long> lastOnGround = new HashMap<>();
+        
+        Runnable acrophobiaRunnable = new Runnable() {
+            @Override
+            public void run() {
+                for (Player p: getServer().getOnlinePlayers()){
+                    long t;
+                    if (conf_use_ticktime) t = p.getWorld().getFullTime()*50;
+                    else t=System.currentTimeMillis();
+                
+                    String pname=p.getName();
+                    boolean gliding = p.isGliding();
+                    Location loc=p.getLocation();                    
+                    
+                    World w=p.getWorld();
+                    Chunk c=w.getChunkAt(loc);
+                    ChunkSnapshot cs=c.getChunkSnapshot();
+                    Block highestBlock= w.getHighestBlockAt(loc); //excludes passable blocks - is this what we want? idk
+                    Location hightestBlockLoc=highestBlock.getLocation();
+                    
+                    boolean tooHigh = (loc.getY() - hightestBlockLoc.getY())>conf_acrophobia_height;
+                    boolean scared=tooHigh && gliding;
+                    
+                    if (lastOnGround.get(pname)==null) lastOnGround.put(pname,0L);
+                    
+                    if (!scared) lastOnGround.put(pname,t);
+                    else{
+                        if (rateLimitMsg("acrophobia-warn",p.getName(),10000)){
+                                p.sendMessage(acrophobia_warn);
+                            }
+                        if (t-lastOnGround.get(pname)>(conf_acrophobia_delay*1000-0.1)){
+                            p.addPotionEffect(
+                                new PotionEffect(
+                                    PotionEffectType.BLINDNESS,
+                                    conf_acrophobia_duration_ticks,
+                                    conf_acrophobia_power, true // ambient
+                                    ));
+                            if (rateLimitMsg("acrophobia-notice",p.getName(),10000)){
+                                p.sendMessage(acrophobia_notice);
+                            }
+                        }
+                    }
+                    
+                    //getLogger().info("Player: "+pname+" Y: "+loc.getY()+" HBy: "+hightestBlockLoc.getY()+" G: "+gliding);
+                    
+                    
+                }
+            }
+        };
+        if ((!conf_all_disable) && conf_acrophobia_enabled)    
+            scheduler.scheduleSyncRepeatingTask(this,acrophobiaRunnable, 5L, 10L);
     }
     @Override
     public void onDisable() {
