@@ -22,6 +22,8 @@ import java.lang.Math;
 import org.bukkit.ChatColor;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
@@ -65,7 +67,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         FileConfiguration config = getConfig();
         
         boolean conf_all_disable = config.getBoolean("cen_all_disable");
-        
+        boolean conf_use_ticktime = config.getBoolean("cen-use-tick-time");
         
         
         // ICARUS
@@ -284,6 +286,76 @@ public class ConfigurableElytraNerfs extends JavaPlugin
             getServer().getPluginManager().registerEvents(termvelListener, this);
             
         
+        // Limit Boost
+        boolean conf_limitboost_enabled = config.getBoolean("limit-boost-enabled");
+        int conf_limitboost_time_ms = (int)Math.round(config.getDouble("limit-boost-time-period")*1000);
+        int conf_limitboost_count = (int)config.getDouble("limit-boost-count");
+        String limitboost_warn_tmp=
+            "["+
+            ChatColor.BLUE+"CEN"+
+            ChatColor.RESET+"/"+
+            ChatColor.AQUA+"LimitBoost"+
+            ChatColor.RESET+"] "+
+            ChatColor.RED+"You may only boost ";
+            
+        if (conf_limitboost_count!=1)
+            limitboost_warn_tmp = limitboost_warn_tmp+
+            ChatColor.BOLD+conf_limitboost_count+
+            ChatColor.RESET+ChatColor.RED+" times every ";
+        else
+            limitboost_warn_tmp = limitboost_warn_tmp+
+            ChatColor.BOLD+"ONCE"+
+            ChatColor.RESET+ChatColor.RED+" every ";
+        limitboost_warn_tmp = limitboost_warn_tmp+
+            ChatColor.BOLD+(conf_limitboost_time_ms/1000)+
+            ChatColor.RESET+ChatColor.RED+" seconds."+
+            ChatColor.RESET;
+        
+        final String limitboost_warn=limitboost_warn_tmp;
+        Map<String,List<Long>> boost_log= new HashMap();
+        
+        Listener limitboostListener = new Listener(){
+            @EventHandler 
+            public void onPlayerInteract(PlayerInteractEvent evt){
+                
+                Player p=evt.getPlayer();
+                String pn = p.getName();
+                Material mat=evt.getMaterial();
+                boolean is_fw=(mat==Material.FIREWORK_ROCKET);
+                boolean gliding = p.isGliding();
+                
+                long t;
+                if (conf_use_ticktime) t = p.getWorld().getFullTime()*50;
+                else t=System.currentTimeMillis();
+                //getLogger().info("LB FW "+is_fw+" GL "+gliding+" T "+t);
+                if (is_fw && gliding){
+                    if (boost_log.get(pn) == null) boost_log.put(pn,new ArrayList());
+                    
+                    List<Long> personalList = boost_log.get(pn);
+                    while (
+                        personalList.size()>0
+                        && (Math.abs(personalList.get(0)-t)>conf_limitboost_time_ms))
+                        personalList.remove(0);
+                    
+                    // Remove duplicate event
+                    if (personalList.size()>0 &&
+                        (Math.abs(personalList.get(personalList.size()-1)-t)<10)){}
+                    else{
+                        //getLogger().info("BL "+personalList.size());
+                        if (personalList.size()>=conf_limitboost_count){
+                            evt.setCancelled(true);
+                            if (rateLimitMsg("limitboost",p.getName(),1000)){
+                                p.sendMessage(limitboost_warn);
+                            }
+                        }else{
+                            personalList.add(t);
+                        }
+                    }
+                }
+            }
+        };
+        if ((!conf_all_disable) && conf_limitboost_enabled)    
+            getServer().getPluginManager().registerEvents(limitboostListener, this);
     }
     @Override
     public void onDisable() {
