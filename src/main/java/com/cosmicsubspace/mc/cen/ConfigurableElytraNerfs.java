@@ -30,10 +30,19 @@ import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.util.Vector;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.CommandExecutor;
 
-public class ConfigurableElytraNerfs extends JavaPlugin 
-{   
-    
+public class ConfigurableElytraNerfs extends JavaPlugin implements CommandExecutor
+{      
+
+    String command_output = "CEN not enabled yet.";
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        sender.sendMessage(command_output);
+        return true;
+    }
     Map<String,Map<String,Long>> lastNotifiedTime = new HashMap<>();
     boolean rateLimitMsg(String type, String username, int millisec){
         if (lastNotifiedTime.get(type) == null){
@@ -51,6 +60,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         }
         return false;
     }
+    
     @Override
     public void onEnable() {
         this.saveDefaultConfig();
@@ -391,6 +401,180 @@ public class ConfigurableElytraNerfs extends JavaPlugin
         };
         if ((!conf_all_disable) && conf_acrophobia_enabled)    
             scheduler.scheduleSyncRepeatingTask(this,acrophobiaRunnable, 5L, 10L);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(ChatColor.LIGHT_PURPLE);
+        sb.append("## ");
+        sb.append(ChatColor.BOLD);
+        sb.append("Configurable Elytra Nerfs");
+        sb.append(ChatColor.RESET);
+        sb.append(ChatColor.LIGHT_PURPLE);
+        sb.append(" ##");
+        sb.append(ChatColor.RESET+"\n");
+        
+        sb.append("  Plugin Status: ");
+        if (conf_all_disable){
+            sb.append(ChatColor.RED);
+            sb.append(ChatColor.BOLD);
+            sb.append("DISABLED");
+            sb.append(ChatColor.RESET+"\n");
+        }else{
+            sb.append(ChatColor.GREEN);
+            sb.append(ChatColor.BOLD);
+            sb.append("ENABLED");
+            sb.append(ChatColor.RESET+"\n");
+            
+            sb.append("    Use tick time: ");
+            sb.append(ChatColor.BOLD);
+            sb.append(conf_use_ticktime);
+            sb.append(ChatColor.RESET+"\n");
+            
+            sb.append("  Module [ ");
+            sb.append(ChatColor.BOLD);
+            sb.append("ICARUS");
+            sb.append(ChatColor.RESET);
+            sb.append(" ]: ");
+            if (conf_icarus_enabled){
+                sb.append(ChatColor.GREEN);
+                sb.append(ChatColor.BOLD);
+                sb.append("ENABLED");
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Durabilty hit: ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_icarus_hit);
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Allow nether: ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_icarus_allow_nether);
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Allow Rain: ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_icarus_allow_raining);
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Min Y: ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_icarus_minY);
+                sb.append(ChatColor.RESET+"\n");
+            }else{
+                sb.append(ChatColor.RED);
+                sb.append(ChatColor.BOLD);
+                sb.append("DISABLED");
+                sb.append(ChatColor.RESET+"\n");
+            }
+            
+            sb.append("  Module [ ");
+            sb.append(ChatColor.BOLD);
+            sb.append("Glider");
+            sb.append(ChatColor.RESET);
+            sb.append(" ]: ");
+            if (conf_glider_enabled){
+                sb.append(ChatColor.GREEN);
+                sb.append(ChatColor.BOLD);
+                sb.append("ENABLED");
+                sb.append(ChatColor.RESET+"\n");
+            }else{
+                sb.append(ChatColor.RED);
+                sb.append(ChatColor.BOLD);
+                sb.append("DISABLED");
+                sb.append(ChatColor.RESET+"\n");
+            }
+            
+            sb.append("  Module [ ");
+            sb.append(ChatColor.BOLD);
+            sb.append("Terminal Velocity");
+            sb.append(ChatColor.RESET);
+            sb.append(" ]: ");
+            if (conf_tv_enabled){
+                sb.append(ChatColor.GREEN);
+                sb.append(ChatColor.BOLD);
+                sb.append("ENABLED");
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Max speed (m/s): ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_tv_maxvel_mps);
+                sb.append(ChatColor.RESET+"\n");
+            }else{
+                sb.append(ChatColor.RED);
+                sb.append(ChatColor.BOLD);
+                sb.append("DISABLED");
+                sb.append(ChatColor.RESET+"\n");
+            }
+            
+            sb.append("  Module [ ");
+            sb.append(ChatColor.BOLD);
+            sb.append("Limit Boost");
+            sb.append(ChatColor.RESET);
+            sb.append(" ]: ");
+            if (conf_limitboost_enabled){
+                sb.append(ChatColor.GREEN);
+                sb.append(ChatColor.BOLD);
+                sb.append("ENABLED");
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Time range (sec): ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_limitboost_time_ms/1000.0);
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Max boost count: ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_limitboost_count);
+                sb.append(ChatColor.RESET+"\n");
+            }else{
+                sb.append(ChatColor.RED);
+                sb.append(ChatColor.BOLD);
+                sb.append("DISABLED");
+                sb.append(ChatColor.RESET+"\n");
+            }
+            
+            sb.append("  Module [ ");
+            sb.append(ChatColor.BOLD);
+            sb.append("Acrophobia");
+            sb.append(ChatColor.RESET);
+            sb.append(" ]: ");
+            if (conf_acrophobia_enabled){
+                sb.append(ChatColor.GREEN);
+                sb.append(ChatColor.BOLD);
+                sb.append("ENABLED");
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Height (m): ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_acrophobia_height);
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Blindness duration (sec): ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_acrophobia_duration_sec);
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Blindness power: ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_acrophobia_power+1);
+                sb.append(ChatColor.RESET+"\n");
+                
+                sb.append("    Delay (sec): ");
+                sb.append(ChatColor.BOLD);
+                sb.append(conf_acrophobia_delay);
+                sb.append(ChatColor.RESET+"\n");
+            }else{
+                sb.append(ChatColor.RED);
+                sb.append(ChatColor.BOLD);
+                sb.append("DISABLED");
+                sb.append(ChatColor.RESET+"\n");
+            }
+            
+        }
+        
+        // Remove trailing newline
+        sb.deleteCharAt(sb.length()-1);
+        command_output = sb.toString();
+    
     }
     @Override
     public void onDisable() {
