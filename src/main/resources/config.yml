@@ -1,4 +1,4 @@
-# Global disable
+# Disables all modules
 cen-all-disable: false
 
 # Use tick time as time measurement?
