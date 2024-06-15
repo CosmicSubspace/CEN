@@ -132,13 +132,15 @@ public class ConfigurableElytraNerfs extends JavaPlugin
                         sunUp = isDay && w.hasSkyLight();
                     }
                     
-                    boolean sunlightOnPlayer = (skylight==15) && sunUp;
+                    boolean height_high = loc.getBlockY() > conf_icarus_minY;
+                    
+                    boolean sunlightOnPlayer = (skylight==15) && sunUp && height_high;
                     
                     if (!conf_icarus_allow_nether){
                         if (w.isUltraWarm()) sunlightOnPlayer=true;
                     }
                     
-                    boolean height_high = loc.getBlockY() > conf_icarus_minY;
+                    
                     
                     PlayerInventory pinv= p.getInventory();
                     ItemStack chestplate=pinv.getChestplate();
