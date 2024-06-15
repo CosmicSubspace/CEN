@@ -27,45 +27,6 @@ cen-all-disable: false
 cen-use-tick-time: true
 ```
 
-
-### Terminal Velocity
-Enforces an upper limit on Elytra glide speed.
-Straightforward and easy to understand.
-```
-terminal-velocity-enabled: true
-terminal-velocity-speed: 16
-```
-
-
-### Glider
-Disables firework boosting, essentially making the Elytra into a glider.
-Encourages building towers and launch infrastructure.
-
-`glider-enabled: true`
-
-
-### Limit Boost
-Limits how many times you can boost in a certain time period.
-Default limit is one firework every 60 seconds.
-Encourages longer-duration fireworks and short 'hops'.
-```
-limit-boost-enabled: true
-limit-boost-time-period: 60 #seconds
-limit-boost-count: 1 #fireworks
-```
-
-### Acrophobia
-Applies Blindness when flying too high, measured as a distance from the closest terrain.
-Encourages building elytra 'highways', a flat road for low-altitude flying.
-```
-acrophobia-enabled: true
-acrophobia-height: 10 #meters over terrain
-acrophobia-duration: 10 #seconds
-acrophobia-delay: 2 #seconds
-acrophobia-power: 1 #power of Blindness effect
-```
-
-
 ### Icarus
 When flying under direct sunlight or in the nether,
 the elytra in use will take 5%(configurable) durability damage each second, ignoring Unbreaking enchants. Like in vanilla, the elytra will never fully break though.
@@ -81,6 +42,42 @@ icarus-durability-hit: 10
 icarus-allow-nether: false # Allow elytra in the Nether.
 icarus-allow-raining: true # Allow elytra when it is raining (overworld)
 icarus-minimum-height: 60 #Minimum Y-height for the effect to kick in
+```
+
+### Acrophobia
+Applies Blindness when flying too high, measured as a distance from the closest terrain.
+Encourages building elytra 'highways', a flat road for low-altitude flying.
+```
+acrophobia-enabled: true
+acrophobia-height: 10 #meters over terrain
+acrophobia-duration: 10 #seconds
+acrophobia-delay: 2 #seconds
+acrophobia-power: 1 #power of Blindness effect
+```
+
+### Terminal Velocity
+Enforces an upper limit on Elytra glide speed.
+Straightforward and easy to understand.
+```
+terminal-velocity-enabled: true
+terminal-velocity-speed: 16
+```
+
+### Glider
+Disables firework boosting, essentially making the Elytra into a glider.
+Encourages building towers and launch infrastructure.
+```
+glider-enabled: true
+```
+
+### Limit Boost
+Limits how many times you can boost in a certain time period.
+Default limit is one firework every 60 seconds.
+Encourages longer-duration fireworks and short 'hops'.
+```
+limit-boost-enabled: true
+limit-boost-time-period: 60 #seconds
+limit-boost-count: 1 #fireworks
 ```
 
 ## Commands

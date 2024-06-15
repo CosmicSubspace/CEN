@@ -6,6 +6,23 @@ cen-all-disable: false
 # if below is true, all time options will effectively be doubled.
 cen-use-tick-time: true
 
+
+# Icarus
+icarus-enabled: true
+# How many durability points to subtract every half-second
+# Note that an elytra has 432 total durabilty.
+icarus-durability-hit: 10 
+icarus-allow-nether: false # Allow elytra in the Nether.
+icarus-allow-raining: true # Allow elytra when it is raining (overworld)
+icarus-minimum-height: 60 #Minimum Y-height for the effect to kick in.
+
+# Acrophobia
+acrophobia-enabled: true
+acrophobia-height: 10 #meters over terrain
+acrophobia-duration: 10 #seconds
+acrophobia-delay: 2 #seconds
+acrophobia-power: 1 #power of Blindness effect
+
 # Terminal Velocity
 terminal-velocity-enabled: true
 terminal-velocity-speed: 16
@@ -17,19 +34,3 @@ glider-enabled: true
 limit-boost-enabled: true
 limit-boost-time-period: 60 #seconds
 limit-boost-count: 1 #fireworks
-
-# Acrophobia
-acrophobia-enabled: true
-acrophobia-height: 10 #meters over terrain
-acrophobia-duration: 10 #seconds
-acrophobia-delay: 2 #seconds
-acrophobia-power: 1 #power of Blindness effect
-
-# ICARUS
-icarus-enabled: true
-# How many durability points to subtract every half-second
-# Note that an elytra has 432 total durabilty.
-icarus-durability-hit: 10 
-icarus-allow-nether: false # Allow elytra in the Nether.
-icarus-allow-raining: true # Allow elytra when it is raining (overworld)
-icarus-minimum-height: 60 #Minimum Y-height for the effect to kick in.

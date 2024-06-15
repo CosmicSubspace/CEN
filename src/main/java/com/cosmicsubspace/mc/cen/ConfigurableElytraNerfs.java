@@ -74,7 +74,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin implements CommandExecut
         boolean conf_use_ticktime = config.getBoolean("cen-use-tick-time");
         
         
-        // ICARUS
+        // Icarus
         boolean conf_icarus_enabled = config.getBoolean("icarus-enabled");
         int conf_icarus_hit = config.getInt("icarus-durability-hit");
         boolean conf_icarus_allow_nether = config.getBoolean("icarus-allow-nether");
@@ -193,34 +193,77 @@ public class ConfigurableElytraNerfs extends JavaPlugin implements CommandExecut
             scheduler.scheduleSyncRepeatingTask(this,icarusRunnable, 0L, 10L);
         
         
-        // Glider
-        String glider_warn=
+        
+        // Acrophobia
+        boolean conf_acrophobia_enabled = config.getBoolean("acrophobia-enabled");
+        double conf_acrophobia_height = config.getDouble("acrophobia-height");
+        double conf_acrophobia_duration_sec = config.getDouble("acrophobia-duration");
+        int conf_acrophobia_duration_ticks = (int)Math.round(conf_acrophobia_duration_sec*20);
+        int conf_acrophobia_power = (int)config.getDouble("acrophobia-power")-1;
+        double conf_acrophobia_delay = config.getDouble("acrophobia-delay");
+        
+        String acrophobia_prefix=
             "["+
             ChatColor.BLUE+"CEN"+
             ChatColor.RESET+"/"+
-            ChatColor.AQUA+"Glider"+
-            ChatColor.RESET+"] "+
-            ChatColor.RED+ChatColor.BOLD+"Elytra boosting is not allowed!"+
-            ChatColor.RESET;
+            ChatColor.AQUA+"Acrophobia"+
+            ChatColor.RESET+"] ";
+        String acrophobia_warn=
+            acrophobia_prefix+
+            ChatColor.RED+"You are afraid of heights..."+
+            ChatColor.RESET;        
+        String acrophobia_notice=
+            acrophobia_prefix+
+            ChatColor.RED+ChatColor.BOLD+"You are blinded by fear!"+
+            ChatColor.RESET;        
         
-        boolean conf_glider_enabled = config.getBoolean("glider-enabled");
-        Listener gliderListener = new Listener(){
-            @EventHandler 
-            public void onPlayerInteract(PlayerInteractEvent evt){
-                Player p=evt.getPlayer();
-                Material mat=evt.getMaterial();
-                boolean is_fw=(mat==Material.FIREWORK_ROCKET);
-                boolean gliding = p.isGliding();
-                if (is_fw && gliding){
-                    evt.setCancelled(true);
-                    if (rateLimitMsg("glider",p.getName(),1000)){
-                        p.sendMessage(glider_warn);
+        Map<String,Long> lastOnGround = new HashMap<>();
+        
+        Runnable acrophobiaRunnable = new Runnable() {
+            @Override
+            public void run() {
+                for (Player p: getServer().getOnlinePlayers()){
+                    long t;
+                    if (conf_use_ticktime) t = p.getWorld().getFullTime()*50;
+                    else t=System.currentTimeMillis();
+                
+                    String pname=p.getName();
+                    boolean gliding = p.isGliding();
+                    Location loc=p.getLocation();                    
+                    
+                    World w=p.getWorld();
+                    Block highestBlock= w.getHighestBlockAt(loc); //excludes passable blocks - is this what we want? idk
+                    Location hightestBlockLoc=highestBlock.getLocation();
+                    
+                    boolean tooHigh = (loc.getY() - hightestBlockLoc.getY())>conf_acrophobia_height;
+                    boolean scared=tooHigh && gliding;
+                    
+                    if (lastOnGround.get(pname)==null) lastOnGround.put(pname,0L);
+                    
+                    if (!scared) lastOnGround.put(pname,t);
+                    else{
+                        if (rateLimitMsg("acrophobia-warn",p.getName(),10000)){
+                                p.sendMessage(acrophobia_warn);
+                            }
+                        if (t-lastOnGround.get(pname)>(conf_acrophobia_delay*1000-0.1)){
+                            p.addPotionEffect(
+                                new PotionEffect(
+                                    PotionEffectType.BLINDNESS,
+                                    conf_acrophobia_duration_ticks,
+                                    conf_acrophobia_power, true // ambient
+                                    ));
+                            if (rateLimitMsg("acrophobia-notice",p.getName(),10000)){
+                                rateLimitMsg("acrophobia-warn",p.getName(),0);
+                                p.sendMessage(acrophobia_notice);
+                            }
+                        }
                     }
+                    
                 }
             }
         };
-        if ((!conf_all_disable) && conf_glider_enabled)    
-            getServer().getPluginManager().registerEvents(gliderListener, this);
+        if ((!conf_all_disable) && conf_acrophobia_enabled)    
+            scheduler.scheduleSyncRepeatingTask(this,acrophobiaRunnable, 5L, 10L);
         
         
         
@@ -260,6 +303,38 @@ public class ConfigurableElytraNerfs extends JavaPlugin implements CommandExecut
         if ((!conf_all_disable) && conf_tv_enabled)    
             getServer().getPluginManager().registerEvents(termvelListener, this);
             
+        
+        
+        // Glider
+        String glider_warn=
+            "["+
+            ChatColor.BLUE+"CEN"+
+            ChatColor.RESET+"/"+
+            ChatColor.AQUA+"Glider"+
+            ChatColor.RESET+"] "+
+            ChatColor.RED+ChatColor.BOLD+"Elytra boosting is not allowed!"+
+            ChatColor.RESET;
+        
+        boolean conf_glider_enabled = config.getBoolean("glider-enabled");
+        Listener gliderListener = new Listener(){
+            @EventHandler 
+            public void onPlayerInteract(PlayerInteractEvent evt){
+                Player p=evt.getPlayer();
+                Material mat=evt.getMaterial();
+                boolean is_fw=(mat==Material.FIREWORK_ROCKET);
+                boolean gliding = p.isGliding();
+                if (is_fw && gliding){
+                    evt.setCancelled(true);
+                    if (rateLimitMsg("glider",p.getName(),1000)){
+                        p.sendMessage(glider_warn);
+                    }
+                }
+            }
+        };
+        if ((!conf_all_disable) && conf_glider_enabled)    
+            getServer().getPluginManager().registerEvents(gliderListener, this);
+        
+        
         
         // Limit Boost
         boolean conf_limitboost_enabled = config.getBoolean("limit-boost-enabled");
@@ -331,76 +406,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin implements CommandExecut
             getServer().getPluginManager().registerEvents(limitboostListener, this);
             
             
-        // Acrophobia
-        boolean conf_acrophobia_enabled = config.getBoolean("acrophobia-enabled");
-        double conf_acrophobia_height = config.getDouble("acrophobia-height");
-        double conf_acrophobia_duration_sec = config.getDouble("acrophobia-duration");
-        int conf_acrophobia_duration_ticks = (int)Math.round(conf_acrophobia_duration_sec*20);
-        int conf_acrophobia_power = (int)config.getDouble("acrophobia-power")-1;
-        double conf_acrophobia_delay = config.getDouble("acrophobia-delay");
         
-        String acrophobia_prefix=
-            "["+
-            ChatColor.BLUE+"CEN"+
-            ChatColor.RESET+"/"+
-            ChatColor.AQUA+"Acrophobia"+
-            ChatColor.RESET+"] ";
-        String acrophobia_warn=
-            acrophobia_prefix+
-            ChatColor.RED+"You are afraid of heights..."+
-            ChatColor.RESET;        
-        String acrophobia_notice=
-            acrophobia_prefix+
-            ChatColor.RED+ChatColor.BOLD+"You are blinded by fear!"+
-            ChatColor.RESET;        
-        
-        Map<String,Long> lastOnGround = new HashMap<>();
-        
-        Runnable acrophobiaRunnable = new Runnable() {
-            @Override
-            public void run() {
-                for (Player p: getServer().getOnlinePlayers()){
-                    long t;
-                    if (conf_use_ticktime) t = p.getWorld().getFullTime()*50;
-                    else t=System.currentTimeMillis();
-                
-                    String pname=p.getName();
-                    boolean gliding = p.isGliding();
-                    Location loc=p.getLocation();                    
-                    
-                    World w=p.getWorld();
-                    Block highestBlock= w.getHighestBlockAt(loc); //excludes passable blocks - is this what we want? idk
-                    Location hightestBlockLoc=highestBlock.getLocation();
-                    
-                    boolean tooHigh = (loc.getY() - hightestBlockLoc.getY())>conf_acrophobia_height;
-                    boolean scared=tooHigh && gliding;
-                    
-                    if (lastOnGround.get(pname)==null) lastOnGround.put(pname,0L);
-                    
-                    if (!scared) lastOnGround.put(pname,t);
-                    else{
-                        if (rateLimitMsg("acrophobia-warn",p.getName(),10000)){
-                                p.sendMessage(acrophobia_warn);
-                            }
-                        if (t-lastOnGround.get(pname)>(conf_acrophobia_delay*1000-0.1)){
-                            p.addPotionEffect(
-                                new PotionEffect(
-                                    PotionEffectType.BLINDNESS,
-                                    conf_acrophobia_duration_ticks,
-                                    conf_acrophobia_power, true // ambient
-                                    ));
-                            if (rateLimitMsg("acrophobia-notice",p.getName(),10000)){
-                                rateLimitMsg("acrophobia-warn",p.getName(),0);
-                                p.sendMessage(acrophobia_notice);
-                            }
-                        }
-                    }
-                    
-                }
-            }
-        };
-        if ((!conf_all_disable) && conf_acrophobia_enabled)    
-            scheduler.scheduleSyncRepeatingTask(this,acrophobiaRunnable, 5L, 10L);
         
         StringBuilder sb = new StringBuilder();
         sb.append(ChatColor.LIGHT_PURPLE);
