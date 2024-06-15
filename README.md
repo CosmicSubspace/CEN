@@ -21,8 +21,8 @@ Below are options that affect all modules.
 # Disables all modules
 cen-all-disable: false
 
-# Use tick time as time measurement?
-# When the server's running at 10TPS,
+# Use game tick time or system clock time as time measurement?
+# For example, when the server's running at 10TPS,
 # if below is true, all time options will effectively be doubled.
 cen-use-tick-time: true
 ```
