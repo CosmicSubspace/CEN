@@ -24,13 +24,13 @@ acrophobia-delay: 2 #seconds
 acrophobia-power: 1 #power of Blindness effect
 
 # Terminal Velocity
-terminal-velocity-enabled: false
+terminal-velocity-enabled: true
 terminal-velocity-speed: 10
 
 # Glider
 glider-enabled: false
 
 # Limit Boost
-limit-boost-enabled: false
+limit-boost-enabled: true
 limit-boost-time-period: 60 #seconds
 limit-boost-count: 2 #fireworks
