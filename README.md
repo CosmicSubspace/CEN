@@ -1,6 +1,7 @@
 # Configurable Elytra Nerfs (CEN)
 **A Spigot plugin for nerfing Elytras**  
-Tested working on Spigot `1.17` `1.18` `1.19` `1.20` `1.21`
+Tested working on Spigot `1.17` `1.18` `1.19` `1.20` `1.21`  
+[SpigotMC Resource Link](https://www.spigotmc.org/resources/configurable-elytra-nerfs.117404/)
 
 *Elytras are overpowered.*  
 Once a player obtains an elytra, all methods of transportation, be it boats, minecarts, ice boats, horses, etc are instantly made obsolete, and in my opinion, is no fun.
@@ -28,6 +29,7 @@ cen-use-tick-time: true
 ```
 
 ### Icarus
+![Demo of Icarus module](https://i.imgur.com/6QQ89HY.gif)  
 When flying under direct sunlight or in the nether,  
 the elytra in use will take 5%(configurable) durability damage each second, ignoring Unbreaking enchants. Like in vanilla, the elytra will never fully break though.  
 Does not penalize Elytra usage in the End, at night, or while raining.  
@@ -44,6 +46,7 @@ icarus-minimum-height: 60 #Minimum Y-height for the effect to kick in
 ```
 
 ### Acrophobia
+![Demo of Acrophobia module](https://i.imgur.com/9kqJzST.gif)  
 Applies Blindness when flying too high from the closest terrain.  
 Encourages building elytra 'highways', a flat road for low-altitude flying.
 ```
@@ -55,6 +58,7 @@ acrophobia-power: 1 #power of Blindness effect
 ```
 
 ### Terminal Velocity
+![Demo of Terminal Velocity module](https://i.imgur.com/jfQVWAP.gif)  
 Enforces an upper limit on Elytra glide speed.  
 Straightforward and easy to understand.
 ```
@@ -63,6 +67,7 @@ terminal-velocity-speed: 10
 ```
 
 ### Glider
+![Demo of Glider module](https://i.imgur.com/X1ns1Wk.gif)  
 Disables firework boosting, essentially making the Elytra into a glider.  
 Encourages building towers and launch infrastructure.
 ```
@@ -70,6 +75,7 @@ glider-enabled: true
 ```
 
 ### Limit Boost
+![Demo of Limit Boost module](https://i.imgur.com/H3ef9mv.gif)  
 Limits how many times you can boost in a certain time period.  
 Default limit is two fireworks every 60 seconds.  
 Encourages longer-duration fireworks and short 'hops'.
