@@ -1,5 +1,5 @@
 name: ConfigurableElytraNerfs
-version: 0.1
+version: 1.0.0
 main: com.cosmicsubspace.mc.cen.ConfigurableElytraNerfs
 description: Nerfs Elytras... configurably.
 api-version: '1.17'
