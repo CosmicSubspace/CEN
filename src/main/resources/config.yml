@@ -17,20 +17,20 @@ icarus-allow-raining: true # Allow elytra when it is raining (overworld)
 icarus-minimum-height: 60 #Minimum Y-height for the effect to kick in.
 
 # Acrophobia
-acrophobia-enabled: true
-acrophobia-height: 10 #meters over terrain
-acrophobia-duration: 10 #seconds
+acrophobia-enabled: false
+acrophobia-height: 20 #meters over terrain
+acrophobia-duration: 5 #seconds
 acrophobia-delay: 2 #seconds
 acrophobia-power: 1 #power of Blindness effect
 
 # Terminal Velocity
-terminal-velocity-enabled: true
-terminal-velocity-speed: 16
+terminal-velocity-enabled: false
+terminal-velocity-speed: 10
 
 # Glider
-glider-enabled: true
+glider-enabled: false
 
 # Limit Boost
-limit-boost-enabled: true
+limit-boost-enabled: false
 limit-boost-time-period: 60 #seconds
-limit-boost-count: 1 #fireworks
+limit-boost-count: 2 #fireworks
