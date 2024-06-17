@@ -178,7 +178,7 @@ public class ConfigurableElytraNerfs extends JavaPlugin implements CommandExecut
                                     p.sendMessage(icarus_warn_line3);
                                 }
                                 p.sendTitle(
-                                        "", //title
+                                        " ", //title
                                         ChatColor.RED+"Elytra "+Math.round(durabilityRatio*100)+"%", //subtitle
                                         0, //fadein, ticks
                                         20, //sustain, ticks
